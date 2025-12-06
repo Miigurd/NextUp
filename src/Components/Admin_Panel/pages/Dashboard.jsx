@@ -32,7 +32,7 @@ const Dashboard = () => {
       </div>
 
       {/* RECENT ORDERS CARD */}
-      <section className="card-table recent-orders">
+      <section className="card-table">
         <div className="card-table-header">
           <h2>Recent Orders</h2>
           <button className="btn-small">View Orders</button>

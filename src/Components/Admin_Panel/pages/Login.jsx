@@ -7,7 +7,6 @@ const Login = () => {
       {/* LEFT GREEN WELCOME SIDE */}
       <div className="login-left">
         <div className="login-logo-row">
-          
           <span className="login-logo-text">NextUp</span>
         </div>
         <h1>Hello, welcome!</h1>
