@@ -10,7 +10,7 @@ const Login = () => {
           <span className="login-logo-text">NextUp</span>
         </div>
         <h1>Hello, welcome!</h1>
-        <p>Welcome back! Ready to find something you’ll love?</p>
+        <p>Welcome back! Are you ready to find something you’ll love?</p>
         <p>Your essentials, one click away.</p>
       </div>
 
