@@ -50,8 +50,10 @@ function App() {
 
       <main className="main-content">
         <Routes>
+          <Route path="/" element={<Navigate to="/admin/orders" />} />
+
           {/* SHOP ROUTES */}
-          <Route path="/" element={<Navigate to="/NextUp" />} />
+          {/* <Route path="/" element={<Navigate to="/NextUp" />} /> */}
           <Route path="/NextUp" element={<HomePage />} />
           <Route path="/NextUp/about" element={<About />} />
           <Route path="/NextUp/contact" element={<Contact />} />
