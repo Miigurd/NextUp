@@ -1,0 +1,36 @@
+import React from "react";
+import "../Admin.css";
+
+const AdminLayout = ({ children }) => {
+  return (
+    <div className="admin-shell">
+      {/* TOP NAVBAR */}
+      <header className="admin-header">
+        <div className="admin-header-left">
+          <img
+            src={process.env.PUBLIC_URL + "/images/logo.png"}
+            alt="NextUp logo"
+            className="admin-logo-img"
+          />
+          <span className="admin-logo-text">NextUp</span>
+        </div>
+
+        <nav className="admin-nav">
+          <a href="/admin/dashboard">Dashboard</a>
+          <a href="/admin/products">Products</a>
+          <a href="/admin/orders">Admin</a>
+        </nav>
+
+        <div className="admin-icons">
+          <span>🔍</span>
+          <span>👤</span>
+        </div>
+      </header>
+
+      {/* PAGE CONTENT */}
+      <main className="admin-main">{children}</main>
+    </div>
+  );
+};
+
+export default AdminLayout;
