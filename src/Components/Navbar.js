@@ -9,7 +9,7 @@ function Navbar() {
   const handleLogout = () => {
     sessionStorage.removeItem('user'); // clear stored user
     sessionStorage.removeItem('token'); // optional token
-    navigate('/admin/login'); // redirect to home page
+    navigate('/login'); // redirect to home page
   };
 
   return (

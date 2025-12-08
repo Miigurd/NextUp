@@ -26,16 +26,25 @@ function ProductDetail() {
   const handleAddToCart = async () => {
     if (!product) return;
 
+    // Get user from sessionStorage
+    const storedUser = sessionStorage.getItem("user");
+    if (!storedUser) {
+      alert("Please log in first!");
+      return;
+    }
+
+    const user = JSON.parse(storedUser);
+
     setAdding(true);
 
     try {
       const response = await fetch("http://localhost:9090/api/carts", {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          user_id: user.id,  // ✅ Pass user_id here
           product_id: product.id,
           quantity: quantity,
           price: product.price,
@@ -82,7 +91,7 @@ function ProductDetail() {
         <Row className="align-items-center">
           <Col md={6} className="text-center mb-4 mb-md-0">
             <img
-              src={process.env.PUBLIC_URL + product.image}
+              src={`http://localhost:9090/products/${product.image}`}
               alt={product.title}
               className="img-fluid rounded-3"
               style={{ maxHeight: "350px", objectFit: "contain" }}

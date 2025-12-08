@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // import useNavigate
 import "../Admin.css";
 
 const Login = () => {
@@ -8,6 +9,7 @@ const Login = () => {
   const [role, setRole] = useState("user"); // default role
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // initialize useNavigate
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent browser GET navigation
@@ -36,7 +38,7 @@ const Login = () => {
         sessionStorage.setItem("token", response.data.token); // optional token
 
         // redirect based on role
-        if (role === "admin") window.location.href = "/admin/dashboard";
+        if (role === "admin") window.location.href = "/admin/products";
         else window.location.href = "/NextUp";
       } else {
         setError(response.data.message || "Login failed. Check your credentials.");
@@ -47,6 +49,10 @@ const Login = () => {
       setError(err.response?.data?.message || "Login failed. Check your credentials.");
       setLoading(false);
     }
+  };
+
+  const handleSignUp = () => {
+    navigate("/register"); // redirect to register page
   };
 
   return (
@@ -102,7 +108,7 @@ const Login = () => {
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? "Please wait..." : "Login"}
             </button>
-            <button type="button" className="btn-outline">
+            <button type="button" className="btn-outline" onClick={handleSignUp}>
               Sign up
             </button>
           </div>

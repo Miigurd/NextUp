@@ -10,10 +10,10 @@ import ProductList from "./Components/ProductList";
 import ProductDetail from "./Components/ProductDetails";
 import Cart from "./Components/Cart";
 import Checkout from "./Components/Checkout";
+import Register from "./Components/Register";
 
 // Admin panel components
 import AdminLayout from "./Components/Admin_Panel/AdminLayoutContainer/AdminLayout";
-import Dashboard from "./Components/Admin_Panel/pages/Dashboard";
 import Login from "./Components/Admin_Panel/pages/Login";
 import Orders from "./Components/Admin_Panel/pages/Orders";
 import Products from "./Components/Admin_Panel/pages/Products";
@@ -50,7 +50,7 @@ function App() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Navigate to="/admin/orders" />} />
+          <Route path="/" element={<Navigate to="/login" />} />
 
           {/* SHOP ROUTES */}
           {/* <Route path="/" element={<Navigate to="/NextUp" />} /> */}
@@ -61,17 +61,10 @@ function App() {
           <Route path="/NextUp/product/:id" element={<ProductDetail />} />
           <Route path="/NextUp/checkout" element={<Checkout />} />
           <Route path="/NextUp/cart" element={<Cart />} />
+          <Route path="/register" element={<Register />} />
 
           {/* ADMIN ROUTES */}
-          <Route path="/admin/login" element={<Login />} />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminLayout>
-                <Dashboard />
-              </AdminLayout>
-            }
-          />
+          <Route path="/login" element={<Login />} />
           <Route
             path="/admin/orders"
             element={

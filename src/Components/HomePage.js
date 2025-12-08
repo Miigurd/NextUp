@@ -12,7 +12,7 @@ const ProductCard = ({ id, image, title, price }) => (
     <Card className="text-center shadow-sm border-0 rounded-3 position-relative h-100">
       <Card.Img
         variant="top"
-        src={process.env.PUBLIC_URL + image}
+        src={`http://localhost:9090/products/${image}`}
         alt={title}
         style={{ height: "120px", objectFit: "contain", marginTop: "10px" }}
       />

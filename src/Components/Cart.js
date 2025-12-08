@@ -7,15 +7,21 @@ function Cart() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch cart from API
+  // Get current user from sessionStorage
+  const storedUser = sessionStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
   const fetchCart = async () => {
+    if (!user) {
+      setCart({ items: [], total_price: 0 });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:9090/api/carts/1", {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch(`http://localhost:9090/api/carts/${user.id}`);
+      if (!response.ok) throw new Error("Failed to fetch cart");
       const data = await response.json();
       setCart(data);
     } catch (error) {
@@ -30,49 +36,44 @@ function Cart() {
     fetchCart();
   }, []);
 
-  const handleDecrease = async (item) => {
-    if (item.quantity <= 1) return;
-    await updateCartItem(item.id, item.quantity - 1);
-  };
-
-  const handleIncrease = async (item) => {
-    await updateCartItem(item.id, item.quantity + 1);
-  };
-
   const updateCartItem = async (itemId, quantity) => {
     try {
       const response = await fetch(`http://localhost:9090/api/carts/${itemId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ quantity }),
       });
       if (!response.ok) throw new Error("Failed to update item");
-      fetchCart(); // Refresh cart after update
+      fetchCart();
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleDecrease = (item) => {
+    if (item.quantity > 1) updateCartItem(item.id, item.quantity - 1);
+  };
+
+  const handleIncrease = (item) => {
+    updateCartItem(item.id, item.quantity + 1);
   };
 
   const handleRemove = async (itemId) => {
     try {
       const response = await fetch(`http://localhost:9090/api/carts/${itemId}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
       });
       if (!response.ok) throw new Error("Failed to remove item");
-      fetchCart(); // Refresh cart after deletion
+      fetchCart();
     } catch (error) {
       console.error(error);
     }
   };
 
   const handleCheckout = () => {
-    if (!cart || cart.items.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
       alert("Your cart is empty!");
       return;
     }
@@ -87,7 +88,7 @@ function Cart() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <Container className="text-center my-5">
         <h3>Your cart is empty</h3>
@@ -116,14 +117,13 @@ function Cart() {
             <th>Total</th>
           </tr>
         </thead>
-
         <tbody>
           {cart.items.map((item) => (
             <tr key={item.id}>
               <td>
                 <div className="d-flex align-items-center">
                   <img
-                    src={process.env.PUBLIC_URL + item.product.image}
+                    src={`http://localhost:9090/products/${item.product.image}`}
                     alt={item.product.title}
                     width="80"
                     className="me-3 rounded"
