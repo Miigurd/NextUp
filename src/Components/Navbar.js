@@ -32,7 +32,9 @@ function Navbar() {
       {/* Right Side Navbar */}
       <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <FaSearch className="icon" />
-        <FaUser className="icon" />
+        <Link to="/NextUp/my-orders" className="text-decoration-none">
+          <FaUser className="icon" />
+        </Link>
         <Link to="/NextUp/cart" className="text-success text-decoration-none" style={{ display: 'flex', alignItems: 'center' }}>
           <FaShoppingCart className="icon" />
         </Link>

@@ -10,6 +10,7 @@ import ProductList from "./Components/ProductList";
 import ProductDetail from "./Components/ProductDetails";
 import Cart from "./Components/Cart";
 import Checkout from "./Components/Checkout";
+import MyOrders from "./Components/MyOrders";
 import Register from "./Components/Register";
 
 // Admin panel components
@@ -61,6 +62,7 @@ function App() {
           <Route path="/NextUp/product/:id" element={<ProductDetail />} />
           <Route path="/NextUp/checkout" element={<Checkout />} />
           <Route path="/NextUp/cart" element={<Cart />} />
+          <Route path="/NextUp/my-orders" element={<MyOrders />} />
           <Route path="/register" element={<Register />} />
 
           {/* ADMIN ROUTES */}
