@@ -1,101 +1,168 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Table, Button, Container, Spinner, Alert } from "react-bootstrap";
+import EditProduct from "./EditProduct";
+import AddProduct from "./AddProduct";
 import "../Admin.css";
 
 const Products = () => {
-  return (
-    <div className="products-page">
-      <h1>Product Listing</h1>
-      <div className="card-table products-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Product ID</th>
-              <th>Product Name</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1001</td>
-              <td>Wireless Bluetooth Headset</td>
-              <td>Electronics</td>
-              <td>49.9</td>
-              <td>150</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1002</td>
-              <td>Organic Cotton T-Shirt</td>
-              <td>Apparel</td>
-              <td>24.5</td>
-              <td>75</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1003</td>
-              <td>4K Smart TV, 55-inch</td>
-              <td>Electronics</td>
-              <td>799</td>
-              <td>25</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1004</td>
-              <td>Leather Minimalist Wallet</td>
-              <td>Accessories</td>
-              <td>35</td>
-              <td>120</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1005</td>
-              <td>Stainless Steel Water Bottle</td>
-              <td>Home Goods</td>
-              <td>19.95</td>
-              <td>200</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1006</td>
-              <td>Ergonomic Office Chair</td>
-              <td>Furniture</td>
-              <td>150.99</td>
-              <td>40</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1007</td>
-              <td>High‑Performance Laptop</td>
-              <td>Electronics</td>
-              <td>1199</td>
-              <td>15</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1008</td>
-              <td>Running Shoes, Blue/Gray</td>
-              <td>Apparel</td>
-              <td>89.99</td>
-              <td>95</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-            <tr>
-              <td>1009</td>
-              <td>Professional Blender</td>
-              <td>Home Goods</td>
-              <td>85.5</td>
-              <td>60</td>
-              <td>✏️ 🗑 👁</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-      <button className="btn-primary add-product-btn">Add Product</button>
-    </div>
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Fetch all products
+  const fetchProducts = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const token = sessionStorage.getItem("token"); // if using auth
+      const response = await fetch("http://localhost:9090/api/products", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+
+      const data = await response.json();
+      setProducts(data); // assuming backend returns array of products
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch products.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Open edit modal
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setShowEditModal(true);
+  };
+
+  // Update product in state after editing
+  const handleUpdateProduct = (updatedProduct) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+    );
+  };
+
+  // Add new product to state
+  const handleAddProduct = (newProduct) => {
+    setProducts((prev) => [newProduct, ...prev]); // add at the top
+  };
+
+  // Delete product
+  const handleDelete = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`http://localhost:9090/api/products/${productId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete product");
+
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      alert("Product deleted successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete product");
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container className="text-center my-5">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="my-5">
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Container className="products-page my-5">
+      <h1>Product Listing</h1>
+      <Button
+        className="btn-primary add-product-btn mb-3"
+        onClick={() => setShowAddModal(true)}
+      >
+        Add Product
+      </Button>
+
+      <Table striped bordered hover responsive className="products-card">
+        <thead>
+          <tr>
+            <th>Product ID</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((product) => (
+            <tr key={product.id}>
+              <td>{product.id}</td>
+              <td>{product.title}</td>
+              <td>{product.category}</td>
+              <td>₱{product.price}</td>
+              <td>
+                <Button
+                  variant="warning"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => handleEditClick(product)}
+                >
+                  ✏️
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => handleDelete(product.id)}
+                >
+                  🗑
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* Edit Product Modal */}
+      <EditProduct
+        show={showEditModal}
+        handleClose={() => setShowEditModal(false)}
+        product={editingProduct}
+        onUpdate={handleUpdateProduct}
+      />
+
+      {/* Add Product Modal */}
+      <AddProduct
+        show={showAddModal}
+        handleClose={() => setShowAddModal(false)}
+        onAdd={handleAddProduct}
+      />
+    </Container>
   );
 };
 

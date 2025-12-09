@@ -1,14 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaSearch, FaUser, FaShoppingCart } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaSearch, FaUser, FaShoppingCart, FaSignOutAlt } from 'react-icons/fa';
 
 function Navbar() {
+  const navigate = useNavigate();
+
+  // Logout function
+  const handleLogout = () => {
+    sessionStorage.removeItem('user'); // clear stored user
+    sessionStorage.removeItem('token'); // optional token
+    navigate('/login'); // redirect to home page
+  };
+
   return (
     <nav className="navbar">
       {/* Left Side Navbar */}
       <div className="navbar-left">
         <Link to='/NextUp' className="text-decoration-none" style={{ display: 'flex', alignItems: 'center' }}>
-          <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className="logo" /> {/* ✅ Works now */}
+          <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="Logo" className="logo" />
           <span className="brand-name">NextUp</span>
         </Link>
       </div>
@@ -21,12 +30,20 @@ function Navbar() {
       </div>
 
       {/* Right Side Navbar */}
-      <div className="navbar-right">
+      <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <FaSearch className="icon" />
         <FaUser className="icon" />
         <Link to="/NextUp/cart" className="text-success text-decoration-none" style={{ display: 'flex', alignItems: 'center' }}>
           <FaShoppingCart className="icon" />
         </Link>
+        {/* Logout Button */}
+        <button 
+          onClick={handleLogout} 
+          className="btn btn-outline-danger"
+          style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+        >
+          <FaSignOutAlt /> Logout
+        </button>
       </div>
     </nav>
   );

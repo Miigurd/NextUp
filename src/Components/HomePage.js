@@ -1,9 +1,9 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
-import products from "../data/products.json";
 
-const ProductCard = ({ id, image, title, price, discount, note }) => (
+const ProductCard = ({ id, image, title, price }) => (
   <Link
     to={`/NextUp/product/${id}`}
     className="product-card text-decoration-none d-block text-center p-2"
@@ -12,7 +12,7 @@ const ProductCard = ({ id, image, title, price, discount, note }) => (
     <Card className="text-center shadow-sm border-0 rounded-3 position-relative h-100">
       <Card.Img
         variant="top"
-        src={process.env.PUBLIC_URL + image}
+        src={`http://localhost:9090/products/${image}`}
         alt={title}
         style={{ height: "120px", objectFit: "contain", marginTop: "10px" }}
       />
@@ -27,8 +27,22 @@ const ProductCard = ({ id, image, title, price, discount, note }) => (
 );
 
 function HomePage() {
-  const homeProducts = products.filter((p) => p.category === "Signature Collection Line");
-  const popularProducts = products.filter((p) => p.category === "Bath & Body Aromatic Line");
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:9090/api/products") // update if your URL differs
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error("Failed to load products:", err));
+  }, []);
+
+  const homeProducts = products.filter(
+    (p) => p.category === "Signature Collection Line"
+  );
+
+  const popularProducts = products.filter(
+    (p) => p.category === "Bath & Body Aromatic Line"
+  );
 
   const testimonials = [
     { name: "Luisa", text: "“I love it! No more air fresheners.”", stars: 4 },
@@ -53,7 +67,7 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Product Section */}
+      {/* Signature Collection */}
       <Container className="mt-5">
         <Row className="text-center mb-4">
           <Col>

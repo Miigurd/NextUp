@@ -3,28 +3,99 @@ import { Link, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 
 function Checkout() {
-  const [cartItems, setCartItems] = useState([]);
-  const [subtotal, setSubtotal] = useState(0);
-  const [shipping] = useState(0); // Free shipping
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(savedCart);
+    // Get user from sessionStorage
+    const storedUser = sessionStorage.getItem("user");
+    if (!storedUser) {
+      alert("Please log in first!");
+      navigate("/login");
+      return;
+    }
+    const user = JSON.parse(storedUser);
 
-    const total = savedCart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-    setSubtotal(total);
-  }, []);
+    // Fetch cart from API
+    const fetchCart = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:9090/api/carts/${user.id}`);
+        if (!response.ok) throw new Error("Failed to load cart");
+        const data = await response.json();
+        setCart(data);
+      } catch (error) {
+        console.error(error);
+        setCart({ items: [], total_price: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleCheckout = () => {
-    // ✅ Clear cart after checkout
-    localStorage.removeItem("cart");
-    alert("Thank you for your purchase!");
-    navigate("/NextUp");
+    fetchCart();
+  }, [navigate]);
+
+  const handleCheckout = async () => {
+    const storedUser = sessionStorage.getItem("user");
+    if (!storedUser) {
+      alert("Please log in first!");
+      return;
+    }
+
+    const user = JSON.parse(storedUser);
+
+    try {
+      const response = await fetch("http://localhost:9090/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
+
+      const text = await response.text(); // <--- IMPORTANT
+      console.log("Raw Response:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text); // Try decoding JSON
+      } catch (e) {
+        console.error("JSON parse error:", e);
+        alert("Server returned invalid JSON.");
+        return;
+      }
+
+      alert("Order placed successfully!");
+      sessionStorage.removeItem("cart");
+      navigate("/NextUp");
+
+    } catch (error) {
+      console.error("Checkout Error:", error);
+      alert("Checkout failed. Please try again.");
+    }
   };
+
+  if (loading) {
+    return (
+      <Container className="text-center my-5">
+        <h3>Loading checkout...</h3>
+      </Container>
+    );
+  }
+
+  if (!cart || cart.items.length === 0) {
+    return (
+      <Container className="text-center my-5">
+        <h3>Your cart is empty</h3>
+        <Link to="/NextUp" className="btn btn-success mt-3">
+          Back to shopping
+        </Link>
+      </Container>
+    );
+  }
 
   return (
     <Container className="my-5">
@@ -45,35 +116,19 @@ function Checkout() {
             </div>
 
             <h5 className="fw-semibold mt-4 mb-3">Shipping Address</h5>
-
             <Row>
-              <Col md={6}>
-                <Form.Control placeholder="Name" className="mb-3" />
-              </Col>
-              <Col md={6}>
-                <Form.Control placeholder="Second Name" className="mb-3" />
-              </Col>
+              <Col md={6}><Form.Control placeholder="Name" className="mb-3" /></Col>
+              <Col md={6}><Form.Control placeholder="Second Name" className="mb-3" /></Col>
             </Row>
-
             <Form.Control placeholder="Address and number" className="mb-3" />
             <Form.Control placeholder="Shipping note (optional)" className="mb-3" />
-
             <Row>
-              <Col md={6}>
-                <Form.Control placeholder="City" className="mb-3" />
-              </Col>
-              <Col md={6}>
-                <Form.Control placeholder="Postal Code" className="mb-3" />
-              </Col>
+              <Col md={6}><Form.Control placeholder="City" className="mb-3" /></Col>
+              <Col md={6}><Form.Control placeholder="Postal Code" className="mb-3" /></Col>
             </Row>
-
             <Row>
-              <Col md={6}>
-                <Form.Control placeholder="Province" className="mb-3" />
-              </Col>
-              <Col md={6}>
-                <Form.Control placeholder="Country/Region" className="mb-3" />
-              </Col>
+              <Col md={6}><Form.Control placeholder="Province" className="mb-3" /></Col>
+              <Col md={6}><Form.Control placeholder="Country/Region" className="mb-3" /></Col>
             </Row>
 
             <Form.Check
@@ -98,7 +153,7 @@ function Checkout() {
                 variant="success"
                 className="px-5"
                 onClick={handleCheckout}
-                disabled={cartItems.length === 0}
+                disabled={cart.items.length === 0}
               >
                 Check out
               </Button>
@@ -109,17 +164,16 @@ function Checkout() {
         {/* Right Section: Summary */}
         <Col md={5}>
           <Card className="p-4 shadow-sm border-0 bg-light">
-            {/* ✅ Show all items */}
-            {cartItems.length === 0 ? (
+            {cart.items.length === 0 ? (
               <p className="text-center text-muted">Your cart is empty.</p>
             ) : (
               <>
-                {cartItems.map((item, index) => (
-                  <div key={index} className="d-flex align-items-center mb-3 border-bottom pb-2">
+                {cart.items.map((item) => (
+                  <div key={item.id} className="d-flex align-items-center mb-3 border-bottom pb-2">
                     <div className="position-relative me-3">
                       <img
-                        src={process.env.PUBLIC_URL + item.image}
-                        alt={item.title}
+                        src={`http://localhost:9090/products/${item.product.image}`}
+                        alt={item.product.title}
                         width="70"
                         className="rounded"
                       />
@@ -131,7 +185,7 @@ function Checkout() {
                       </span>
                     </div>
                     <div className="flex-grow-1">
-                      <p className="mb-0 fw-semibold">{item.title}</p>
+                      <p className="mb-0 fw-semibold">{item.product.title}</p>
                       <p className="text-success mb-0">₱{item.price}</p>
                     </div>
                   </div>
@@ -144,16 +198,16 @@ function Checkout() {
 
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
-                  <span>₱{subtotal}</span>
+                  <span>₱{cart.total_price}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Shipping</span>
-                  <span>₱{shipping}</span>
+                  <span>₱0</span>
                 </div>
                 <hr />
                 <div className="d-flex justify-content-between fw-bold fs-5">
                   <span>Total</span>
-                  <span className="text-success">₱{subtotal + shipping}</span>
+                  <span className="text-success">₱{cart.total_price}</span>
                 </div>
               </>
             )}
